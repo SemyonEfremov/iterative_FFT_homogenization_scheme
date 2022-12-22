@@ -1,7 +1,7 @@
 import numpy as np
 import cupy as cp
 
-class Tensor:
+class Tensor(object):
 
     def __init__(self, order_values: np.ndarray, spatial_dimensions: np.ndarray) -> None:
         self._order = order_values
