@@ -8,13 +8,23 @@ class Tensor(object):
         self._dimensions = spatial_dimensions
         self._tensor_values = np.zeros((np.concatenate((self._order, self._dimensions), axis = 0)))
 
-    def setMeanValue(self, mean_value: np.ndarray) -> None:
+    def set_mean_value(self, mean_value: np.ndarray) -> None:
         pass
-    
-    def calculateMeanValue(self) -> np.ndarray:
+
+    def calculate_mean_value(self) -> np.ndarray:
         return np.zeros(1)
 
-    def getInfo(self) -> tuple:
+    @staticmethod
+    def calculate_in_product(t_values_a: Tensor, t_values_b: Tensor)
+        pass
+
+    def compute_ffourier(self) -> np.ndarray:
+        return np.zeros(1)
+
+    def compute_bfourier(self) -> np.ndarray:
+        return np.zeros(1)
+
+    def get_info(self) -> tuple:
         return self._tensor_values, self._order, self._dimensions
 
 if __name__ == "__main__":
