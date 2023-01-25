@@ -35,17 +35,25 @@ class Tensor(object):
 
     def compute_ffourier(self) -> np.ndarray:
         along_axes = tuple(range(-1, -(len(self.dimensions) + 1), -1))
-        tensor_values_gpu = cp.array(self.tensor_values)
-        tensor_values_gpu = cp.fft.fftn(tensor_values_gpu, axes = along_axes)
-        tensor_values_fourier = cp.asnumpy(tensor_values_gpu)
+        tensor_values_gpu = cp.zeros(tuple(self.dimensions))
+        tensor_values_fourier = np.zeros(self.tensor_values.shape)
+        for row_idx in range(self.order[0]):
+            for column_idx in range(self.order[1]):
+                tensor_values_gpu = cp.array(self.tensor_values[row_idx,column_idx])
+                tensor_values_gpu = cp.fft.fftn(tensor_values_gpu, axes = along_axes)
+                tensor_values_fourier[row_idx,column_idx] = cp.asnumpy(tensor_values_gpu)
         del tensor_values_gpu
         return tensor_values_fourier
 
     def compute_bfourier(self) -> np.ndarray:
         along_axes = tuple(range(-1, -(len(self.dimensions) + 1), -1))
-        tensor_values_gpu = cp.array(self.tensor_values)
-        tensor_values_gpu = cp.fft.ifftn(tensor_values_gpu, axes = along_axes)
-        tensor_values_spatial = cp.asnumpy(tensor_values_gpu)
+        tensor_values_gpu = cp.zeros(tuple(self.dimensions))
+        tensor_values_spatial = np.zeros(self.tensor_values.shape)
+        for row_idx in range(self.order[0]):
+            for column_idx in range(self.order[1]):
+                tensor_values_gpu = cp.array(self.tensor_values[row_idx,column_idx])
+                tensor_values_gpu = cp.fft.ifftn(tensor_values_gpu, axes = along_axes)
+                tensor_values_spatial[row_idx,column_idx] = cp.asnumpy(tensor_values_gpu)
         del tensor_values_gpu
         return tensor_values_spatial
 
