@@ -6,6 +6,7 @@ class Tensor(object):
 
     # in case of a vetor we need to check whether order values.shape is (1 x m),
     # not (m)
+    # maybe change order and dimensions from ndarray to immutable tuple
     def __init__(self, order_values: np.ndarray, spatial_dimensions: np.ndarray) -> None:
         self.order = order_values
         self.dimensions = spatial_dimensions
@@ -62,6 +63,15 @@ class Tensor(object):
     
     def set_values(self, values: np.ndarray) -> None:
         self.tensor_values = np.copy(values)
+
+    def get_order(self) -> np.ndarray:
+        return np.copy(self.order)
+
+    def get_dimensions(self) -> np.ndarray:
+        return np.copy(self.dimensions)
+
+    def get_tensor_shape(self) -> tuple:
+        return self.tensor_values.shape
 
     def get_info(self) -> tuple:
         return self.tensor_values, self.order, self.dimensions
