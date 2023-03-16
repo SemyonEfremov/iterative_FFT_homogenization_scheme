@@ -7,10 +7,13 @@ class Tensor(object):
     # in case of a vetor we need to check whether order values.shape is (1 x m),
     # not (m)
     # maybe change order and dimensions from ndarray to immutable tuple
-    def __init__(self, order_values: np.ndarray, spatial_dimensions: np.ndarray) -> None:
+    def __init__(self,
+                 order_values: np.ndarray,
+                 spatial_dimensions: np.ndarray) -> None:
         self.order = order_values
         self.dimensions = spatial_dimensions
-        self.tensor_values = np.zeros((np.concatenate((self.order, self.dimensions), axis = 0)))
+        self.tensor_values = np.zeros((np.concatenate((self.order,
+                                                self.dimensions), axis = 0)))
 
     # need ot compare input.shape to self.order
     def set_mean_value(self, mean_value: np.ndarray) -> None:
@@ -19,8 +22,11 @@ class Tensor(object):
         mean_value_delta = current_mean_value - mean_value
         for row_idx in range(self.order[0]):
             for column_idx in range(self.order[1]):
-                tensor_values_gpu = cp.array(self.tensor_values[row_idx,column_idx]) - cp.array(mean_value_delta[row_idx,column_idx])
-                self.tensor_values[row_idx,column_idx] = cp.asnumpy(tensor_values_gpu)
+                tensor_values_gpu \
+                    = cp.array(self.tensor_values[row_idx,column_idx]) \
+                    - cp.array(mean_value_delta[row_idx,column_idx])
+                self.tensor_values[row_idx,column_idx] \
+                    = cp.asnumpy(tensor_values_gpu)
         del tensor_values_gpu
 
     def calculate_mean_value(self) -> np.ndarray:
@@ -29,7 +35,9 @@ class Tensor(object):
         along_axes = tuple(range(-1, -(len(self.dimensions) + 1), -1))
         for row_idx in range(self.order[0]):
             for column_idx in range(self.order[1]):
-                mean_value_gpu = cp.mean(cp.array(self.tensor_values[row_idx,column_idx]), axis = along_axes)
+                mean_value_gpu \
+                    = cp.mean(cp.array(self.tensor_values[row_idx,column_idx]),
+                                                            axis = along_axes)
                 mean_value_cpu[row_idx,column_idx] = cp.asnumpy(mean_value_gpu)
         del mean_value_gpu
         return mean_value_cpu
@@ -40,9 +48,12 @@ class Tensor(object):
         tensor_values_fourier = np.zeros(self.tensor_values.shape)
         for row_idx in range(self.order[0]):
             for column_idx in range(self.order[1]):
-                tensor_values_gpu = cp.array(self.tensor_values[row_idx,column_idx])
-                tensor_values_gpu = cp.fft.fftn(tensor_values_gpu, axes = along_axes)
-                tensor_values_fourier[row_idx,column_idx] = cp.asnumpy(tensor_values_gpu)
+                tensor_values_gpu \
+                    = cp.array(self.tensor_values[row_idx,column_idx])
+                tensor_values_gpu \
+                    = cp.fft.fftn(tensor_values_gpu, axes = along_axes)
+                tensor_values_fourier[row_idx,column_idx] \
+                    = cp.asnumpy(tensor_values_gpu)
         del tensor_values_gpu
         return tensor_values_fourier
 
@@ -52,11 +63,23 @@ class Tensor(object):
         tensor_values_spatial = np.zeros(self.tensor_values.shape)
         for row_idx in range(self.order[0]):
             for column_idx in range(self.order[1]):
-                tensor_values_gpu = cp.array(self.tensor_values[row_idx,column_idx])
-                tensor_values_gpu = cp.fft.ifftn(tensor_values_gpu, axes = along_axes)
-                tensor_values_spatial[row_idx,column_idx] = cp.asnumpy(tensor_values_gpu)
+                tensor_values_gpu \
+                    = cp.array(self.tensor_values[row_idx,column_idx])
+                tensor_values_gpu \
+                    = cp.fft.ifftn(tensor_values_gpu, axes = along_axes)
+                tensor_values_spatial[row_idx,column_idx] \
+                    = cp.asnumpy(tensor_values_gpu)
         del tensor_values_gpu
         return tensor_values_spatial
+
+    def compute_frob_norm(self) -> np.ndarray:
+        norm_values_gpu = cp.zeros(tuple(self.dimensions))
+        for row_idx in range(self.order[0]):
+            for col_idx in range(self.order[1]):
+                norm_values_gpu \
+                    += cp.array(self.tensor_values[row_idx,col_idx])**2
+        norm_values = cp.asnumpy(norm_values_gpu)
+        return norm_values
 
     def get_values(self) -> np.ndarray:
         return np.copy(self.tensor_values)
@@ -74,7 +97,7 @@ class Tensor(object):
         return self.tensor_values.shape
 
     def get_info(self) -> tuple:
-        return self.tensor_values, self.order, self.dimensions
+        return (self.tensor_values, self.order, self.dimensions)
 
     def check_attributes(self) -> None:
         pass
