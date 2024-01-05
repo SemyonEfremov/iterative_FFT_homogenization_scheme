@@ -18,8 +18,10 @@ class Tensor(object):
     # need ot compare input.shape to self.order
     def set_mean_value(self, mean_value: np.ndarray) -> None:
         current_mean_value = self.calculate_mean_value()
+        print(current_mean_value.shape)
         tensor_values_gpu = cp.zeros(tuple(self.dimensions))
         mean_value_delta = current_mean_value - mean_value
+        print(mean_value_delta.shape)
         for row_idx in range(self.order[0]):
             for column_idx in range(self.order[1]):
                 tensor_values_gpu \
@@ -41,6 +43,28 @@ class Tensor(object):
                 mean_value_cpu[row_idx,column_idx] = cp.asnumpy(mean_value_gpu)
         del mean_value_gpu
         return mean_value_cpu
+
+    @staticmethod
+    def compute_ddot_prod(t_1: np.ndarray,
+                          t_2: np.ndarray)->np.ndarray:
+        if t_1.shape[1] != t_2.shape[0]:
+            print('ERROR: Impossible to compute double dot product \
+                  (inconsistent tensors dimensions)')
+            return np.array([])
+        print((t_1.shape[0],)+t_2.shape[1:])
+        ddot_values = np.zeros((t_1.shape[0],)+t_2.shape[1:])
+        print(ddot_values.shape)
+        ddot_values_gpu = cp.zeros(tuple(t_1.shape[2:]))
+        print(ddot_values_gpu.shape)
+        for row_idx in range(t_1.shape[0]):
+            for col_idx in range(t_2.shape[1]):
+                for sum_idx in range(t_1.shape[1]):
+                    ddot_values_gpu = cp.array(t_1[row_idx,sum_idx])
+                    ddot_values_gpu *= cp.array(t_2[sum_idx,col_idx])
+                    ddot_values_gpu += cp.array(ddot_values[row_idx,col_idx])
+                    ddot_values[row_idx,col_idx] = cp.asnumpy(ddot_values_gpu)
+        del ddot_values_gpu
+        return ddot_values
 
     def compute_ffourier(self) -> np.ndarray:
         along_axes = tuple(range(-1, -(len(self.dimensions) + 1), -1))

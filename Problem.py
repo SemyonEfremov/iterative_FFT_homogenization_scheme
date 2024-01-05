@@ -143,8 +143,6 @@ class Problem(ABC):
         for freq_element in freq_vector:
             tensor_shape.append(freq_element.size)
         green_values = np.zeros(tuple(tensor_shape))
-        print(len(freq_vector))
-        
         if len(freq_vector) == 2:
             freq_mesh \
                 = np.meshgrid(freq_vector[0], freq_vector[1])
@@ -156,8 +154,6 @@ class Problem(ABC):
             for row_idx in range(tensor_size):
                 for col_idx in range(tensor_size):
                     std_idx = Problem.calculate_t_index_2d([row_idx, col_idx])
-                    #print(std_idx)
-                    
                     green_values_gpu = cp.array(freq_mesh[std_idx[0]])
                     for idx in std_idx[1:]:
                         green_values_gpu *= cp.array(freq_mesh[idx])
@@ -169,7 +165,6 @@ class Problem(ABC):
                     #    * cp.array(freq_mesh[std_idx[0]])
                     green_values[row_idx, col_idx] \
                         = cp.asnumpy(green_values_gpu)
-
                     ind_perms = Problem.calculate_permutations(std_idx)
                     for perm in ind_perms:
                         if sup.kron_delta(perm[0], perm[1]):
@@ -181,7 +176,6 @@ class Problem(ABC):
                             green_values[row_idx, col_idx] \
                                 = cp.asnumpy(green_values_gpu)
                     green_values_gpu /= cp.array(freq_abs)
-                    
                     green_values[row_idx, col_idx] \
                         = cp.asnumpy(green_values_gpu)
         else:
@@ -195,7 +189,6 @@ class Problem(ABC):
                 for col_idx in range(tensor_size):
                     std_idx = Problem.calculate_t_index_3d([row_idx, col_idx])
                     #print(std_idx)
-                    
                     green_values_gpu = cp.array(freq_mesh[std_idx[0]])
                     for idx in std_idx[1:]:
                         green_values_gpu *= cp.array(freq_mesh[idx])
@@ -207,7 +200,6 @@ class Problem(ABC):
                     #    * cp.array(freq_mesh[std_idx[0]])
                     green_values[row_idx, col_idx] \
                         = cp.asnumpy(green_values_gpu)
-                    
                     ind_perms = Problem.calculate_permutations(std_idx)
                     for perm in ind_perms:
                         if sup.kron_delta(perm[0], perm[1]):
@@ -219,7 +211,6 @@ class Problem(ABC):
                             green_values[row_idx, col_idx] \
                                 = cp.asnumpy(green_values_gpu)
                     green_values_gpu /= cp.array(freq_abs)
-                    
                     green_values[row_idx, col_idx] \
                         = cp.asnumpy(green_values_gpu)
         return green_values
